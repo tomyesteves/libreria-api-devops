@@ -7,12 +7,20 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'ENVIRONMENT', choices: ['dev', 'qa', 'prod'], description: 'Deployed environment')
         string(name: 'VERSION', defaultValue: '1.0.0', description: 'Deployed version')
         booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests')
     }
  
-    stages {
+stages {
+        stage('Info') {
+            steps {
+                echo "Rama: ${env.BRANCH_NAME}"
+                echo "PR: ${env.CHANGE_ID ?: 'no es un PR'}"
+                echo "Rama destino del PR: ${env.CHANGE_TARGET ?: '-'}"
+                sh 'git log -1 --oneline'
+            }
+        }
+ 
         stage('Instalar dependencias') {
             steps {
                 sh '''
@@ -43,20 +51,13 @@ pipeline {
                 '''
             }
         }
-
-        stage('Aprobacion') {
-            when {
-                expression { params.ENVIRONMENT == 'prod' }
-            }
-            steps {
-                input message: "Desplegar la version ${params.VERSION} a PRODUCCION?", ok: 'Si, desplegar'
-            }
-        }
-
+ 
         stage('Deploy') {
+            when {
+                branch 'main'
+            }
             steps {
-                echo "Desplegando ${params.VERSION} al ambiente ${params.ENVIRONMENT}"
-                sh 'echo "Entorno desde el shell: $ENVIRONMENT, version $VERSION"'
+                echo "Desplegando ${params.VERSION} desde main"
             }
         }
     }

@@ -35,5 +35,13 @@ docker run --rm -p 5000:5000 libreria-api
 
 ## Jenkins
 
-El archivo `Jenkinsfile` define el pipeline. Empieza con un solo stage y crece
-durante la clase.
+El archivo `Jenkinsfile` define el pipeline. En lugar de archivar archivos, el
+pipeline construye la imagen Docker y la publica en Docker Hub como
+`$usuario/libreria-api:$VERSION` (y `:latest`).
+
+Crea en Jenkins una credencial *Username with password* con ID `dockerhub`
+(usuario de Docker Hub y un [access token](https://hub.docker.com/settings/security)).
+
+Stages: dependencias, lint, test, build image, aprobación (solo prod), push y
+deploy. El deploy corre un contenedor en el host (`dev` → 5000, `qa` → 5001,
+`prod` → 5002).
